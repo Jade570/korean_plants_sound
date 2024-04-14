@@ -19,3 +19,7 @@ https://predictprotein.org/visual_results?req_id=$2y$10$h4xruxK2wYeghOIYGSSxeeih
 https://predictprotein.org/visual_results?req_id=$2y$10$QA8n40ylL4uG8GVNrhvjEOnVJITgJ1uG8E1VUNeaBK979QuhMY1OG
 
 using predictprotein (predictprotein.org) for secondary structure prediction
+
+"flexibility": flexible(disordered protein) 0 <---> 9 rigid
+"featureString": L:other E:beta sheet(strand) H:alpha helix
+"reliability": how certain the structure is pure guess 0 <---> 9 sure
