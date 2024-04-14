@@ -1,0 +1,175 @@
+{
+  "feature": [
+    {
+      "location": { "begin": { "position": "5" }, "end": { "position": "7" } },
+      "type": "helix",
+      "soTermId": "SO:0001114"
+    },
+    {
+      "location": { "begin": { "position": "9" }, "end": { "position": "18" } },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    },
+    {
+      "location": {
+        "begin": { "position": "23" },
+        "end": { "position": "26" }
+      },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    },
+    {
+      "location": {
+        "begin": { "position": "37" },
+        "end": { "position": "39" }
+      },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    },
+    {
+      "location": {
+        "begin": { "position": "48" },
+        "end": { "position": "49" }
+      },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    },
+    {
+      "location": {
+        "begin": { "position": "50" },
+        "end": { "position": "59" }
+      },
+      "type": "helix",
+      "soTermId": "SO:0001114"
+    },
+    {
+      "location": {
+        "begin": { "position": "64" },
+        "end": { "position": "76" }
+      },
+      "type": "helix",
+      "soTermId": "SO:0001114"
+    },
+    {
+      "location": {
+        "begin": { "position": "83" },
+        "end": { "position": "88" }
+      },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    },
+    {
+      "location": {
+        "begin": { "position": "93" },
+        "end": { "position": "93" }
+      },
+      "type": "helix",
+      "soTermId": "SO:0001114"
+    },
+    {
+      "location": {
+        "begin": { "position": "95" },
+        "end": { "position": "98" }
+      },
+      "type": "helix",
+      "soTermId": "SO:0001114"
+    },
+    {
+      "location": {
+        "begin": { "position": "99" },
+        "end": { "position": "111" }
+      },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    },
+    {
+      "location": {
+        "begin": { "position": "128" },
+        "end": { "position": "128" }
+      },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    },
+    {
+      "location": {
+        "begin": { "position": "129" },
+        "end": { "position": "129" }
+      },
+      "type": "helix",
+      "soTermId": "SO:0001114"
+    },
+    {
+      "location": {
+        "begin": { "position": "144" },
+        "end": { "position": "151" }
+      },
+      "type": "helix",
+      "soTermId": "SO:0001114"
+    },
+    {
+      "location": {
+        "begin": { "position": "154" },
+        "end": { "position": "157" }
+      },
+      "type": "helix",
+      "soTermId": "SO:0001114"
+    },
+    {
+      "location": {
+        "begin": { "position": "160" },
+        "end": { "position": "160" }
+      },
+      "type": "helix",
+      "soTermId": "SO:0001114"
+    },
+    {
+      "location": {
+        "begin": { "position": "163" },
+        "end": { "position": "168" }
+      },
+      "type": "helix",
+      "soTermId": "SO:0001114"
+    },
+    {
+      "location": {
+        "begin": { "position": "174" },
+        "end": { "position": "179" }
+      },
+      "type": "helix",
+      "soTermId": "SO:0001114"
+    },
+    {
+      "location": {
+        "begin": { "position": "189" },
+        "end": { "position": "191" }
+      },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    },
+    {
+      "location": {
+        "begin": { "position": "196" },
+        "end": { "position": "200" }
+      },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    },
+    {
+      "location": {
+        "begin": { "position": "210" },
+        "end": { "position": "212" }
+      },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    }
+  ],
+  "secondaryStructures": {
+    "location": { "begin": { "position": "1" }, "end": { "position": "214" } },
+    "featureString": "LLLLHHHLEEEEEEEEEELLLLEEEELLLLLLLLLLEEELLLLLLLLEEHHHHHHHHHHLLLLHHHHHHHHHHHHHLLLLLLEEEEEELLLLHLHHHHEE\nEEEEEEEEEEELLLLLLLLLLLLLLLLEHLLLLLLLLLLLLLLHHHHHHHHLLHHHHLLHLLHHHHHHLLLLLHHHHHHLLLLLLLLLEEELLLLEEEEE\nLLLLLLLLLEEELL",
+    "reliability": "9820230075366677607761102212268876300001588876310179999886202302011276620010348981478852577500033022\n1210357999608888641110678500002677777567532678728760222220202178886016612001243168874354012353226887\n16777424053249"
+  },
+  "provider": "REPROFSec",
+  "ref": "31",
+  "NaN": "s",
+  "length": null
+}

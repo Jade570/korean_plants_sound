@@ -1,0 +1,106 @@
+{
+  "feature": [
+    {
+      "location": { "begin": { "position": "2" }, "end": { "position": "9" } },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    },
+    {
+      "location": {
+        "begin": { "position": "15" },
+        "end": { "position": "20" }
+      },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    },
+    {
+      "location": {
+        "begin": { "position": "38" },
+        "end": { "position": "45" }
+      },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    },
+    {
+      "location": {
+        "begin": { "position": "46" },
+        "end": { "position": "51" }
+      },
+      "type": "helix",
+      "soTermId": "SO:0001114"
+    },
+    {
+      "location": {
+        "begin": { "position": "52" },
+        "end": { "position": "53" }
+      },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    },
+    {
+      "location": {
+        "begin": { "position": "57" },
+        "end": { "position": "68" }
+      },
+      "type": "helix",
+      "soTermId": "SO:0001114"
+    },
+    {
+      "location": {
+        "begin": { "position": "75" },
+        "end": { "position": "79" }
+      },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    },
+    {
+      "location": {
+        "begin": { "position": "84" },
+        "end": { "position": "97" }
+      },
+      "type": "helix",
+      "soTermId": "SO:0001114"
+    },
+    {
+      "location": {
+        "begin": { "position": "98" },
+        "end": { "position": "102" }
+      },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    },
+    {
+      "location": {
+        "begin": { "position": "118" },
+        "end": { "position": "121" }
+      },
+      "type": "strand",
+      "soTermId": "SO:0001111"
+    },
+    {
+      "location": {
+        "begin": { "position": "130" },
+        "end": { "position": "139" }
+      },
+      "type": "helix",
+      "soTermId": "SO:0001114"
+    },
+    {
+      "location": {
+        "begin": { "position": "145" },
+        "end": { "position": "161" }
+      },
+      "type": "helix",
+      "soTermId": "SO:0001114"
+    }
+  ],
+  "secondaryStructures": {
+    "location": { "begin": { "position": "1" }, "end": { "position": "163" } },
+    "featureString": "LEEEEEEEELLLLLEEEEEELLLLLLLLLLLLLLLLLEEEEEEEEHHHHHHEELLLHHHHHHHHHHHHLLLLLLEEEEELLLLHHHHHHHHHHHHHHEEE\nEELLLLLLLLLLLLLLLEEEELLLLLLLLHHHHHHHHHHLLLLLHHHHHHHHHHHHHHHHHLL",
+    "reliability": "9067755450367547745166866764322334312135898865545100122322535443421034766146675168148889888777750368\n733776246787678503340798788890588999851676303456889999999876069"
+  },
+  "provider": "REPROFSec",
+  "ref": "31",
+  "NaN": "s",
+  "length": null
+}

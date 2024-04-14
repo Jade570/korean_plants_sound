@@ -1,0 +1,34 @@
+{
+  "feature": [
+    {
+      "location": { "begin": { "position": "1" }, "end": { "position": "1" } },
+      "type": "disordered region",
+      "soTermId": "SO:0100003"
+    },
+    {
+      "location": {
+        "begin": { "position": "28" },
+        "end": { "position": "42" }
+      },
+      "type": "disordered region",
+      "soTermId": "SO:0100003"
+    },
+    {
+      "location": {
+        "begin": { "position": "200" },
+        "end": { "position": "209" }
+      },
+      "type": "disordered region",
+      "soTermId": "SO:0100003"
+    }
+  ],
+  "disorderedRegion": {
+    "location": { "begin": { "position": "1" }, "end": { "position": "209" } },
+    "featureString": "D--------------------------DDDDDDDDDDDDDDD----------------------------------------------------------\n---------------------------------------------------------------------------------------------------D\nDDDDDDDDD",
+    "reliability": "0135667776766788887778775451144231133454311246766676676656676566556666555465788888888888878888899998\n9999988898887777888776346655664554344234345576667667776765655676778888875555423565578888777776632310\n223454211"
+  },
+  "provider": "MD",
+  "ref": "29",
+  "NaN": "n",
+  "length": null
+}

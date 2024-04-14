@@ -1,0 +1,74 @@
+{
+  "feature": [
+    {
+      "location": { "begin": { "position": "1" }, "end": { "position": "2" } },
+      "type": "disordered region",
+      "soTermId": "SO:0100003"
+    },
+    {
+      "location": {
+        "begin": { "position": "23" },
+        "end": { "position": "34" }
+      },
+      "type": "disordered region",
+      "soTermId": "SO:0100003"
+    },
+    {
+      "location": {
+        "begin": { "position": "106" },
+        "end": { "position": "110" }
+      },
+      "type": "disordered region",
+      "soTermId": "SO:0100003"
+    },
+    {
+      "location": {
+        "begin": { "position": "117" },
+        "end": { "position": "117" }
+      },
+      "type": "disordered region",
+      "soTermId": "SO:0100003"
+    },
+    {
+      "location": {
+        "begin": { "position": "122" },
+        "end": { "position": "122" }
+      },
+      "type": "disordered region",
+      "soTermId": "SO:0100003"
+    },
+    {
+      "location": {
+        "begin": { "position": "124" },
+        "end": { "position": "129" }
+      },
+      "type": "disordered region",
+      "soTermId": "SO:0100003"
+    },
+    {
+      "location": {
+        "begin": { "position": "153" },
+        "end": { "position": "154" }
+      },
+      "type": "disordered region",
+      "soTermId": "SO:0100003"
+    },
+    {
+      "location": {
+        "begin": { "position": "156" },
+        "end": { "position": "163" }
+      },
+      "type": "disordered region",
+      "soTermId": "SO:0100003"
+    }
+  ],
+  "disorderedRegion": {
+    "location": { "begin": { "position": "1" }, "end": { "position": "163" } },
+    "featureString": "DD--------------------DDDDDDDDDDDD------------------------------------------------------------------\n-----DDDDD------D----D-DDDDDD-----------------------DD-DDDDDDDD",
+    "reliability": "5100111333211246554233345454112012002446555553354455565443333544445435556777678666556777677887878876\n765410212201111100131101423220014333473433335543211102003444212"
+  },
+  "provider": "MD",
+  "ref": "29",
+  "NaN": "n",
+  "length": null
+}
