@@ -8,17 +8,17 @@ DNAFiles = [f for f in listdir("DNA")]
 
 for idx, var in enumerate(DNAFiles):
 	atgcpath = "DNA/" + var
-	aminopath = "aminoacid/" + var
+	codonpath = "codon/" + var
 	
 	atgc = open(atgcpath, 'r')
-	amino = open(aminopath, 'w+')
+	codon = open(codonpath, 'w+')
 
 	data = atgc.read()
 	mod = len(data)%3
 	if mod != 0:
 		data = data[:-mod]
 	seq = Seq(data).translate(stop_symbol="\n")
-	amino.write(str(seq))
+	codon.write(str(seq))
  
 	print(seq)
 	atgc.close()
