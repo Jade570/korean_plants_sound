@@ -17,7 +17,7 @@ for idx, var in enumerate(DNAFiles):
 	mod = len(data)%3
 	if mod != 0:
 		data = data[:-mod]
-	seq = Seq(data).translate(stop_symbol="\n")
+	seq = Seq(data).translate()
 	codon.write(str(seq))
  
 	print(seq)
