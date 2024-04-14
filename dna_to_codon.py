@@ -14,10 +14,10 @@ for idx, var in enumerate(DNAFiles):
 	codon = open(codonpath, 'w+')
 
 	data = atgc.read()
-	mod = len(data)%3
-	if mod != 0:
-		data = data[:-mod]
-	seq = Seq(data).translate()
+	# mod = len(data)%3
+	# if mod != 0:
+	# 	data = data[:-mod]
+	seq = Seq(data).translate(stop_symbol=" ")
 	codon.write(str(seq))
  
 	print(seq)
