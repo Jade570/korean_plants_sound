@@ -1,38 +1,26 @@
 
-meter: 시작코돈~종료코돈.
-그루브: 2,3으로 나눠서 만들기
+meter is decided by the length between the start codon and stop codon
 
+rhythms are by the structure of nucleotides
 at(u)gc
-a: dd_ / _dd
-t: d_d_
-g: 다타 다/ 다 타다
-c: 당
+a: dd- / d-d / -dd
+t: d-d-
+g: dd-d/ d-dd
+c: d---
 
-
-+-는 순서 따라.
-a: 4.15   3 2.85             3 -1
-t: 9.7    2 -2.7             4 +4
-g: 3.3    4 3.7              1 -2
-c: (기준), 4.45    2 2.55    2 0
-
-g<a<c<t
+pitch difference is by the acidity of nucleotides
+a: 4.15   3 2.85             3  -1
+t: 9.7    2 -2.7             4  +3
+g: 3.3    4 3.7              1  -2
+c: (default), 4.45    2 2.55 2   0
 
 tonic depends on start codon
 M(ATG):C
 V(GTG):Eb
 L(TTG):Gb
-default: A
-
-M: 
-V:
-L:
-other:
+other: A
 
 
-FLSYCWLPHQRIMTNKSRVADEG
-
-
-코돈 (24개)
 
 flexibility: lfo fm, ramp
 
@@ -41,7 +29,7 @@ secondary: H: attack길게, ramp되게
         L: 
 
 reliability: amplitude
-
+그루브: 2,3으로 나눠서 만들기
 
 
 

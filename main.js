@@ -35,7 +35,7 @@ let reliability =
   "9820230075366677607761102212268876300001588876310179999886202302011276620010348981478852577500033022121035799960888864111067850000267777756753267872876022222020217888601661200124316887435401235322688716777424053249";
 
 const fmSynth = new Tone.Synth().toDestination();
-Tone.Transport.bpm.value = 30;
+Tone.Transport.bpm.value = 75;
 fmSynth.set({
   volume: -2,
   harmonicity: 1.0000000015,
@@ -120,10 +120,14 @@ for (let stopCodon = 0; stopCodon < stopCodonIdx.length - 1; stopCodon++) {
 
     switch (dna[j]) {
       case "A":
-        if (j % 3 < 2) {
+        if (j % 3 == 0) {
           seq.push([Tone.Midi(note), Tone.Midi(note), null]);
-        } else {
+        } 
+        else if(j % 3 == 1){
           seq.push([Tone.Midi(note), null, Tone.Midi(note)]);
+        }
+        else {
+          seq.push([null, Tone.Midi(note), Tone.Midi(note)]);
         }
         break;
       case "T":
