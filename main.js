@@ -3,9 +3,13 @@ function getRandomInt(max) {
   return Math.floor(Math.random() * max);
 }
 
-document.querySelector("button")?.addEventListener("click", async () => {
+document.getElementById("play").addEventListener("click", async () => {
   await Tone.start();
-  //playSynth();
+  playSynth();
+});
+
+document.getElementById("record").addEventListener("click", async () => {
+  await Tone.start();
   recordSynth();
 });
 
@@ -22,7 +26,7 @@ let mode = [
 let dna =
   "TAAAGCTAGTGTCGGATTCAAAGCTGGTGTTAAAGATTACAGATTAACTTATTATACTCCTGAATATCAGACCAAAGATACGGATATCTTGGCGGCATTCCGAGTAACTCCTCAACCTGGGGTGCCGCCCGAGGAAGCGGGAGCAGCAGTAGCTGCTGAATCTTCCACCGGTACATGGACCACTGTTTGGACCGATGGACTTACCAGTCTTGATCGTTACAAAGGGCGATGCTATGACATCGAGCCCGTTGCTGGAGAGGAAAGTCAATTTATTGCCTATGTAGCTTACCCCTTAGACCTTTTCGAAGAAGGTTCTGTTACTAACTTGTTCACTTCCATTGTAGGTAATGTATTTGGATTCAAGGCCCTACGGGCTTTACGTTTGGAAGATTTGCGGATTCCCCCTGCTTATTCCAAAACTTTTCAAGGTCCACCTCATGGTATCCAAGTTGAAAGAGATAAATTGAACAAATATGGCCGTCCTTTGTTGGGATGTACTATCAAACCAAAATTGGGTCTATCGGCTAAGAACTATGGTAGAGCAGTTTACGAATGTCTTCGTGGTGGACTCGATTTTACCAAGGATGATGAGAACGTAAATTCCCAACCATTCATGCGCTGGAGAGATCGTTTTGTCTTTTGTGCGGAAGCAATTAATAAGGCTCAGGCTGAGACGGGTGAAATTAAAGGACATTACTTGAAT";
 let codon =
-  " S CR IQSWC RLQINLLYS ISDQRYGYLGGIPSNSSTWGAARGSGSSSSC IFHRYMDHCLDRWTYQS SLQRAML HRARCWRGKSIYCLCSLPLRPFRRRFCY LVHFHCR CIWIQGPTGFTFGRFADSPCLFQNFSRSTSWYPS KR IEQIWPSFVGMYYQTKIGSIG ELW SSLRMSSWWTRFYQG  ERKFPTIHALERSFCLLCGSN  GSG DG N RTLLE";
+  " S CRIQSWC RLQINLLYS ISDQRYGYLGGIPSNSSTWGAARGSGSSSSC IFHRYMDHCLDRWTYQS SLQRAML HRARCWRGKSIYCLCSLPLRPFRRRFCY LVHFHCR CIWIQGPTGFTFGRFADSPCLFQNFSRSTSWYPS KR IEQIWPSFVGMYYQTKIGSIG ELW SSLRMSSWWTRFYQG  ERKFPTIHALERSFCLLCGSN  GSG DG N RTLLE";
 let flexibility =
   "2002355665655677877777887766741100133214312135678886766575586776676777677777677789999998887888888999989999999999888888888875766787775455356766765677778887778877766577777665666766675346766787776887788742023122133112";
 let secondary =
@@ -31,7 +35,7 @@ let reliability =
   "9820230075366677607761102212268876300001588876310179999886202302011276620010348981478852577500033022121035799960888864111067850000267777756753267872876022222020217888601661200124316887435401235322688716777424053249";
 
 const fmSynth = new Tone.Synth().toDestination();
-Tone.Transport.bpm.value = 75;
+Tone.Transport.bpm.value = 30;
 fmSynth.set({
   volume: -2,
   harmonicity: 1.0000000015,
@@ -55,6 +59,9 @@ for (let i = 0; i < codon.length; i++) {
 console.log(stopCodonIdx);
 
 for (let stopCodon = 0; stopCodon < stopCodonIdx.length - 1; stopCodon++) {
+  seq.push(null);
+  seq.push(null);
+  seq.push(null);
   let curMode = getRandomInt(7);
   console.log(
     (stopCodonIdx[stopCodon] + 1) * 3,
@@ -134,15 +141,41 @@ for (let stopCodon = 0; stopCodon < stopCodonIdx.length - 1; stopCodon++) {
         break;
     }
   }
-  seq.push(null);
-  seq.push(null);
+
 }
 console.log(seq);
-console.log(Tone.TransportTime(Tone.Now));
+
 // play
-new Tone.Sequence((time, note) => {
+let song = new Tone.Sequence((time, note) => {
   fmSynth.triggerAttackRelease(note, 1, time);
 }, seq).start(0);
+
+let repeatTime = 0;
+let codonTime = 0;
+Tone.Transport.scheduleRepeat((time) => {
+  
+  document.getElementById("past_dna").innerHTML = dna.slice(0, repeatTime);
+  document.getElementById("current_dna").innerHTML = dna[repeatTime];
+  document.getElementById("future_dna").innerHTML = dna.slice(
+    repeatTime + 1,
+    dna.length
+  );
+
+  if (repeatTime % 3 === 0) {
+    
+    document.getElementById("past_codon").innerHTML = codon.slice(
+      0,
+      codonTime
+    );
+    document.getElementById("current_codon").innerHTML = codon[codonTime];
+    document.getElementById("future_codon").innerHTML = codon.slice(
+      codonTime + 1,
+      codon.length
+    );
+    codonTime++;
+  }
+  repeatTime++;
+}, "8n");
 
 function playSynth() {
   Tone.Transport.start();
@@ -163,5 +196,5 @@ let recordSynth = () => {
     anchor.download = "record.mp3";
     anchor.href = url;
     anchor.click();
-  },180000);
+  }, 180000);
 };
