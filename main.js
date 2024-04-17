@@ -33,11 +33,11 @@ let secondary =
 let reliability =
   "9820230075366677607761102212268876300001588876310179999886202302011276620010348981478852577500033022121035799960888864111067850000267777756753267872876022222020217888601661200124316887435401235322688716777424053249";
 
-const firSynth = new Tone.Synth().toDestination();
+const firSynth = new Tone.FMSynth().toDestination();
 Tone.Transport.bpm.value = 75;
 firSynth.set({
   volume: -1,
-  harmonicity: 1.0,
+  harmonicity: 1.00006,
   oscillator: { highFrequency: 2000, high: -20, type: "fattriangle15" },
 });
 
@@ -130,13 +130,13 @@ for (let stopCodon = 0; stopCodon < stopCodonIdx.length - 1; stopCodon++) {
           seq.push([
             {
               note: Tone.Midi(note),
-              vel: (5 + reliability[characterIdx]) / 15,
+              vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
             },
             {
               note: Tone.Midi(note),
-              vel: (5 + reliability[characterIdx]) / 15,
+              vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
             },
@@ -146,14 +146,14 @@ for (let stopCodon = 0; stopCodon < stopCodonIdx.length - 1; stopCodon++) {
           seq.push([
             {
               note: Tone.Midi(note),
-              vel: (5 + reliability[characterIdx]) / 15,
+              vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
             },
             null,
             {
               note: Tone.Midi(note),
-              vel: (5 + reliability[characterIdx]) / 15,
+              vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
             },
@@ -163,13 +163,13 @@ for (let stopCodon = 0; stopCodon < stopCodonIdx.length - 1; stopCodon++) {
             null,
             {
               note: Tone.Midi(note),
-              vel: (5 + reliability[characterIdx]) / 15,
+              vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
             },
             {
               note: Tone.Midi(note),
-              vel: (5 + reliability[characterIdx]) / 15,
+              vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
             },
@@ -180,13 +180,13 @@ for (let stopCodon = 0; stopCodon < stopCodonIdx.length - 1; stopCodon++) {
         seq.push([
           {
             note: Tone.Midi(note),
-            vel: (5 + reliability[characterIdx]) / 15,
+            vel: (1 + reliability[characterIdx]) / 11,
             env: envelopes[secondary[characterIdx]],
             modulation: (10 - flexibility[characterIdx]) / 5,
           },
           {
             note: Tone.Midi(note),
-            vel: (5 + reliability[characterIdx]) / 15,
+            vel: (1 + reliability[characterIdx]) / 11,
             env: envelopes[secondary[characterIdx]],
             modulation: (10 - flexibility[characterIdx]) / 5,
           },
@@ -197,20 +197,20 @@ for (let stopCodon = 0; stopCodon < stopCodonIdx.length - 1; stopCodon++) {
           seq.push([
             {
               note: Tone.Midi(note),
-              vel: (5 + reliability[characterIdx]) / 15,
+              vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
             },
             {
               note: Tone.Midi(note),
-              vel: (5 + reliability[characterIdx]) / 15,
+              vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
             },
             null,
             {
               note: Tone.Midi(note),
-              vel: (5 + reliability[characterIdx]) / 15,
+              vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
             },
@@ -219,7 +219,7 @@ for (let stopCodon = 0; stopCodon < stopCodonIdx.length - 1; stopCodon++) {
           seq.push(
             {
               note: Tone.Midi(note),
-              vel: (5 + reliability[characterIdx]) / 15,
+              vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
             },
@@ -227,7 +227,7 @@ for (let stopCodon = 0; stopCodon < stopCodonIdx.length - 1; stopCodon++) {
             null,
             {
               note: Tone.Midi(note),
-              vel: (5 + reliability[characterIdx]) / 15,
+              vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
             }
@@ -236,20 +236,20 @@ for (let stopCodon = 0; stopCodon < stopCodonIdx.length - 1; stopCodon++) {
           seq.push([
             {
               note: Tone.Midi(note),
-              vel: (5 + reliability[characterIdx]) / 15,
+              vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
             },
             null,
             {
               note: Tone.Midi(note),
-              vel: (5 + reliability[characterIdx]) / 15,
+              vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
             },
             {
               note: Tone.Midi(note),
-              vel: (5 + reliability[characterIdx]) / 15,
+              vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
             },
@@ -259,7 +259,7 @@ for (let stopCodon = 0; stopCodon < stopCodonIdx.length - 1; stopCodon++) {
       case "C":
         seq.push({
           note: Tone.Midi(note),
-          vel: (5 + reliability[characterIdx]) / 15,
+          vel: (1 + reliability[characterIdx]) / 11,
           env: envelopes[secondary[characterIdx]],
           modulation: (10 - flexibility[characterIdx]) / 5,
         });
