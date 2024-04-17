@@ -5,7 +5,7 @@ rhythms are by the structure of nucleotides
 at(u)gc
 a: dd- / d-d / -dd
 t: d-d-
-g: dd-d/ d-dd
+g: dd-d/ d--d /d-dd
 c: d---
 
 pitch difference is by the acidity of nucleotides
@@ -25,7 +25,7 @@ other: A
 flexibility: lfo fm, ramp
 
 secondary: H: attack길게, ramp되게
-        e:
+        e: attack 짧게, 스타카토
         L: 
 
 reliability: amplitude
