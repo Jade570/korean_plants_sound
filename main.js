@@ -90,14 +90,20 @@ const killTree = (svg, tree, voice) => {
   voice.song.cancel();
 };
 
-const plantTree = (svg, x, y, voice) => {
-  const tree = drawTree(svg, x, y);
+const showMutation = (tree) => {
+  const treeMutateColor = "#AA0000";
+  const treeMutateOutline = "#550000";
+  const treeColor = "#00AA00";
+  const treeOutline = "#005500";
 
-  tree.addEventListener("click", (evt) => {
-    killTree(svg, tree, voice);
-    evt.stopPropagation();
-  });
-}
+  tree.setAttribute("fill", treeMutateColor);
+  tree.setAttribute("stroke", treeMutateOutline);
+
+  setTimeout(() => {
+    tree.setAttribute("fill", treeColor);
+    tree.setAttribute("stroke", treeOutline);
+  }, 250);
+};
 
 SVG.addEventListener("click", (evt) => {
   const x = evt.offsetX;
@@ -105,8 +111,14 @@ SVG.addEventListener("click", (evt) => {
   const quadX = Math.floor(x / (GRID_SIDE / 3)) + 1;
   const quadY = Math.floor(y / (GRID_SIDE / 3)) + 1;
 
-  const voice = newVoice(quadX, quadY, x, y);
-  plantTree(SVG, evt.offsetX, evt.offsetY, voice);
+  const tree = drawTree(SVG, x, y);
+
+  const voice = newVoice(quadX, quadY, x, y, tree);
+
+  tree.addEventListener("click", (evt) => {
+    killTree(SVG, tree, voice);
+    evt.stopPropagation();
+  });
 });
 
 let mode = [
@@ -144,31 +156,44 @@ const buildDnaDict = (dna, codon) => {
 
 const dnaToCodon = buildDnaDict(dna, codon);
 
-const newDnaSequence = (mutateChance) => {
+const newDnaSequence = (dna, mutateChance) => {
   const nucleotides = ['G', 'T', 'A', 'C'];
   let newDna = "";
+  let dnaMutated = [];
 
   for (let i = 0; i < dna.length; i++) {
     const sourceNucleotide = dna[i];
     let newNucleotide = sourceNucleotide;
+    let mutate = false;
 
     if (Math.random() < mutateChance) {
       newNucleotide = nucleotides[getRandomInt(4)];
+      mutate = true;
     }
 
     newDna += newNucleotide;
+    dnaMutated.push(mutate);
   }
 
   let newCodons = [];
+  let codonsMutated = [];
+
   for (let i = 0; i < newDna.length; i += 3) {
     let dnaSeq = dna.substring(i, i + 3);
+    let seqMutated = dnaMutated.slice(i, i + 3);
+
     let codon = dnaToCodon[dnaSeq];
     newCodons += codon;
+
+    const codonMutated = seqMutated.includes(true);
+    codonsMutated.push(codonMutated);
   }
 
   return {
     dna: newDna,
     codon: newCodons,
+    dnaMutated,
+    codonsMutated,
     flexibility: flexibility,
     secondary: secondary,
     reliability: reliability,
@@ -178,10 +203,10 @@ const newDnaSequence = (mutateChance) => {
 Tone.Transport.bpm.value = 75;
 
 const buildEventSequences = (dnaSeq) => {
-  let { dna, codon, reliability, secondary, flexibility } = dnaSeq;
+  let { dna, codon, dnaMutated, reliability, secondary, flexibility } = dnaSeq;
 
   let seq = [];
-  let stopCodonIdx = [];
+  let stopCodonIdx = [0];
   let characterIdx = -1;
   //figure out which DNA to skip
   for (let i = 0; i < codon.length; i++) {
@@ -189,6 +214,7 @@ const buildEventSequences = (dnaSeq) => {
       stopCodonIdx.push(i);
     }
   }
+  stopCodonIdx.push(codon.length - 1);
   console.log(stopCodonIdx);
 
   for (let stopCodon = 0; stopCodon < stopCodonIdx.length - 1; stopCodon++) {
@@ -268,12 +294,14 @@ const buildEventSequences = (dnaSeq) => {
                 vel: (1 + reliability[characterIdx]) / 11,
                 env: envelopes[secondary[characterIdx]],
                 modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
               },
               {
                 note: Tone.Midi(note),
                 vel: (1 + reliability[characterIdx]) / 11,
                 env: envelopes[secondary[characterIdx]],
                 modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
               },
               null,
             ]);
@@ -284,6 +312,7 @@ const buildEventSequences = (dnaSeq) => {
                 vel: (1 + reliability[characterIdx]) / 11,
                 env: envelopes[secondary[characterIdx]],
                 modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
               },
               null,
               {
@@ -291,6 +320,7 @@ const buildEventSequences = (dnaSeq) => {
                 vel: (1 + reliability[characterIdx]) / 11,
                 env: envelopes[secondary[characterIdx]],
                 modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
               },
             ]);
           } else {
@@ -301,12 +331,14 @@ const buildEventSequences = (dnaSeq) => {
                 vel: (1 + reliability[characterIdx]) / 11,
                 env: envelopes[secondary[characterIdx]],
                 modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
               },
               {
                 note: Tone.Midi(note),
                 vel: (1 + reliability[characterIdx]) / 11,
                 env: envelopes[secondary[characterIdx]],
                 modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
               },
             ]);
           }
@@ -318,12 +350,14 @@ const buildEventSequences = (dnaSeq) => {
               vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
+              mutated: dnaMutated[j],
             },
             {
               note: Tone.Midi(note),
               vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
+              mutated: dnaMutated[j],
             },
           ]);
           break;
@@ -335,12 +369,14 @@ const buildEventSequences = (dnaSeq) => {
                 vel: (1 + reliability[characterIdx]) / 11,
                 env: envelopes[secondary[characterIdx]],
                 modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
               },
               {
                 note: Tone.Midi(note),
                 vel: (1 + reliability[characterIdx]) / 11,
                 env: envelopes[secondary[characterIdx]],
                 modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
               },
               null,
               {
@@ -348,6 +384,7 @@ const buildEventSequences = (dnaSeq) => {
                 vel: (1 + reliability[characterIdx]) / 11,
                 env: envelopes[secondary[characterIdx]],
                 modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
               },
             ]);
           } else if (j % 3 == 1) {
@@ -357,6 +394,7 @@ const buildEventSequences = (dnaSeq) => {
                 vel: (1 + reliability[characterIdx]) / 11,
                 env: envelopes[secondary[characterIdx]],
                 modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
               },
               null,
               null,
@@ -365,6 +403,7 @@ const buildEventSequences = (dnaSeq) => {
                 vel: (1 + reliability[characterIdx]) / 11,
                 env: envelopes[secondary[characterIdx]],
                 modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
               }
             );
           } else {
@@ -374,6 +413,7 @@ const buildEventSequences = (dnaSeq) => {
                 vel: (1 + reliability[characterIdx]) / 11,
                 env: envelopes[secondary[characterIdx]],
                 modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
               },
               null,
               {
@@ -381,12 +421,14 @@ const buildEventSequences = (dnaSeq) => {
                 vel: (1 + reliability[characterIdx]) / 11,
                 env: envelopes[secondary[characterIdx]],
                 modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
               },
               {
                 note: Tone.Midi(note),
                 vel: (1 + reliability[characterIdx]) / 11,
                 env: envelopes[secondary[characterIdx]],
                 modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
               },
             ]);
           }
@@ -397,6 +439,7 @@ const buildEventSequences = (dnaSeq) => {
             vel: (1 + reliability[characterIdx]) / 11,
             env: envelopes[secondary[characterIdx]],
             modulation: (10 - flexibility[characterIdx]) / 5,
+            mutated: dnaMutated[j],
           });
           break;
       }
@@ -409,7 +452,7 @@ const buildEventSequences = (dnaSeq) => {
   };
 };
 
-const buildToneSequence = (seq, synth) => {
+const buildToneSequence = (seq, synth, tree) => {
   return new Tone.Sequence((time, value) => {
     if (value.env) {
       synth.set({
@@ -419,6 +462,10 @@ const buildToneSequence = (seq, synth) => {
       });
     }
     synth.triggerAttackRelease(value.note, 1, time, value.vel);
+
+    if (value.mutated === true) {
+      showMutation(tree);
+    }
   }, seq);
 };
 
@@ -447,11 +494,11 @@ const scheduleDnaDisplay = (dna, codon) => {
   }, "8n");
 };
 
-function prepareNewVoice(quadX, quadY, xCoord, yCoord) {
+function prepareNewVoice(quadX, quadY, xCoord, yCoord, tree) {
   const panAmt = xCoord / GRID_SIDE * 2 - 1;
   const panner = new Tone.Panner(panAmt).toDestination();
 
-  // TODO: vary some synth parameters based on coordinates?
+  // TODO: vary some synth parameters based on xCoord and yCoord?
   const firSynth = new Tone.FMSynth().connect(panner);
   firSynth.set({
     volume: -1,
@@ -459,17 +506,24 @@ function prepareNewVoice(quadX, quadY, xCoord, yCoord) {
     oscillator: { highFrequency: 2000, high: -20, type: "fattriangle15" },
   });
 
-  const dnaSeq = newDnaSequence(Number(mutationBox.textContent) / 100);
+  // segment dna based on quadrat
+  const quadIdx = quadX + quadY * 3 - 4;
+  const numCodons = codon.length;
+  const codonBounds = [quadIdx * numCodons / 9, (quadIdx + 1) * numCodons / 9];
+
+  const dnaSegment = dna.substring(codonBounds[0] * 3, codonBounds[1] * 3);
+
+  const dnaSeq = newDnaSequence(dnaSegment, Number(mutationBox.textContent) / 100);
   const eventSeq = buildEventSequences(dnaSeq);
-  const song = buildToneSequence(eventSeq.seq, firSynth);
+  const song = buildToneSequence(eventSeq.seq, firSynth, tree);
   song.start(0);
 
   const voice = { synth: firSynth, song };
   return voice;
 }
 
-function newVoice(quadX, quadY, xCoord, yCoord) {
-  const voice = prepareNewVoice(quadX, quadY, xCoord, yCoord);
+function newVoice(quadX, quadY, xCoord, yCoord, tree) {
+  const voice = prepareNewVoice(quadX, quadY, xCoord, yCoord, tree);
   Tone.Transport.start();
   return voice;
 }
