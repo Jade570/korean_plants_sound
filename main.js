@@ -23,6 +23,11 @@ document.getElementById("mutation").addEventListener("input", async (event) => {
   mutationBox.textContent = event.target.value;
 });
 
+mutationBox.textContent = document.getElementById("mutation").value;
+
+let CURRENT_SEQUENCE = null;
+let DISPLAY_REPEAT_ID = null;
+
 let mode = [
   [0, 2, 4, 6, 8, 10],
   [0, 1, 3, 4, 6, 7, 9, 10],
@@ -346,7 +351,7 @@ const scheduleDnaDisplay = (dna, codon) => {
   let repeatTime = 0;
   let codonTime = 0;
 
-  Tone.Transport.scheduleRepeat((time) => {
+  return Tone.Transport.scheduleRepeat((time) => {
     document.getElementById("past_dna").innerHTML = dna.slice(0, repeatTime);
     document.getElementById("current_dna").innerHTML = dna[repeatTime];
     document.getElementById("future_dna").innerHTML = dna.slice(
@@ -367,14 +372,20 @@ const scheduleDnaDisplay = (dna, codon) => {
   }, "8n");
 };
 
-function playSynth() {
+function prepareSynthForPlay() {
   const dnaSeq = newDnaSequence(Number(mutationBox.textContent) / 100);
   const eventSeq = buildEventSequences(dnaSeq);
   const song = buildToneSequence(eventSeq.seq);
   song.start(0);
 
-  scheduleDnaDisplay(dnaSeq.dna, dnaSeq.codon);
+  const display = scheduleDnaDisplay(dnaSeq.dna, dnaSeq.codon);
 
+  CURRENT_SEQUENCE = song;
+  DISPLAY_REPEAT_ID = display;
+}
+
+function playSynth() {
+  prepareSynthForPlay();
   Tone.Transport.start();
 }
 
@@ -382,6 +393,7 @@ const recorder = new Tone.Recorder();
 
 let recordSynth = () => {
   firSynth.chain(recorder);
+  prepareSynthForPlay();
   Tone.Transport.start();
   recorder.start();
   setTimeout(async () => {
@@ -398,6 +410,12 @@ let recordSynth = () => {
 
 const stopSynth = () => {
   Tone.Transport.stop();
+
+  CURRENT_SEQUENCE.cancel();
+  CURRENT_SEQUENCE = null;
+
+  Tone.Transport.clear(DISPLAY_REPEAT_ID);
+  DISPLAY_REPEAT_ID = null;
 }
 
 const resetSynth = () => { };
