@@ -4,7 +4,7 @@ function getRandomInt(max) {
 
 document.getElementById("play").addEventListener("click", async () => {
   await Tone.start();
-  playSynth();
+  newVoice();
 });
 
 document.getElementById("record").addEventListener("click", async () => {
@@ -62,7 +62,7 @@ const drawMatrix = (svg) => {
 
 drawMatrix(SVG);
 
-const drawTree = (svg, x, y, voice) => {
+const drawTree = (svg, x, y) => {
   const treeRad = 15;
   const treeColor = "#00AA00";
   const treeOutline = "#005500";
@@ -77,28 +77,37 @@ const drawTree = (svg, x, y, voice) => {
   circle.setAttribute("stroke-width", 3);
   circle.classList.add("tree");
 
-  circle.addEventListener("click", (evt) => {
-    // self-destruct button!
-    svg.removeChild(circle);
+  svg.appendChild(circle);
 
-    // turn off the tree's music
-    voice.synth.disconnect();
-    voice.song.cancel();
+  return circle;
+};
 
+const killTree = (svg, tree, voice) => {
+  svg.removeChild(tree);
+
+  // turn off the tree's music
+  voice.synth.disconnect();
+  voice.song.cancel();
+};
+
+const plantTree = (svg, x, y, voice) => {
+  const tree = drawTree(svg, x, y);
+
+  tree.addEventListener("click", (evt) => {
+    killTree(svg, tree, voice);
     evt.stopPropagation();
   });
-
-  svg.appendChild(circle);
 }
 
 SVG.addEventListener("click", (evt) => {
-  const voice = playSynth();
-  drawTree(SVG, evt.offsetX, evt.offsetY, voice);
-});
+  const x = evt.offsetX;
+  const y = evt.offsetY;
+  const quadX = Math.floor(x / (GRID_SIDE / 3)) + 1;
+  const quadY = Math.floor(y / (GRID_SIDE / 3)) + 1;
 
-// let RUNNING = [];
-// let CURRENT_SEQUENCE = null;
-// let DISPLAY_REPEAT_ID = null;
+  const voice = newVoice(quadX, quadY, x, y);
+  plantTree(SVG, evt.offsetX, evt.offsetY, voice);
+});
 
 let mode = [
   [0, 2, 4, 6, 8, 10],
@@ -438,9 +447,11 @@ const scheduleDnaDisplay = (dna, codon) => {
   }, "8n");
 };
 
-function prepareSynthForPlay() {
-  const panAmt = Math.random() * 2 - 1;
+function prepareNewVoice(quadX, quadY, xCoord, yCoord) {
+  const panAmt = xCoord / GRID_SIDE * 2 - 1;
   const panner = new Tone.Panner(panAmt).toDestination();
+
+  // TODO: vary some synth parameters based on coordinates?
   const firSynth = new Tone.FMSynth().connect(panner);
   firSynth.set({
     volume: -1,
@@ -455,27 +466,18 @@ function prepareSynthForPlay() {
 
   const voice = { synth: firSynth, song };
   return voice;
-
-  // let display = undefined;
-
-  // if (RUNNING.length == 0) {
-  //   display = scheduleDnaDisplay(dnaSeq.dna, dnaSeq.codon);
-  // }
-
-  // RUNNING.push({ synth: firSynth, song, displayId: display });
 }
 
-function playSynth() {
-  const voice = prepareSynthForPlay();
+function newVoice(quadX, quadY, xCoord, yCoord) {
+  const voice = prepareNewVoice(quadX, quadY, xCoord, yCoord);
   Tone.Transport.start();
   return voice;
 }
 
-const recorder = new Tone.Recorder();
-
 let recordSynth = () => {
+  const recorder = new Tone.Recorder();
   firSynth.chain(recorder);
-  prepareSynthForPlay();
+  prepareNewVoice();
   Tone.Transport.start();
   recorder.start();
   setTimeout(async () => {
@@ -497,17 +499,6 @@ const stopOneVoice = (voice) => {
 
 const stopSynth = () => {
   Tone.Transport.stop();
-
-  // for (const running of RUNNING) {
-  //   running.synth.disconnect();
-  //   running.song.cancel();
-
-  //   if (running.displayId) {
-  //     Tone.Transport.clear(running.displayId);
-  //   }
-  // }
-
-  // RUNNING = [];
 }
 
 const resetSynth = () => { };
