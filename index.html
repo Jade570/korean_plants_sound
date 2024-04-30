@@ -3,25 +3,35 @@
 
 <head>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/p5.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js" integrity="sha512-jduERlz7En1IUZR54bqzpNI64AbffZWR//KJgF71SJ8D8/liKFZ+s1RxmUmB+bhCnIfzebdZsULwOrbVB5f3nQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"
+    integrity="sha512-jduERlz7En1IUZR54bqzpNI64AbffZWR//KJgF71SJ8D8/liKFZ+s1RxmUmB+bhCnIfzebdZsULwOrbVB5f3nQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <link rel="stylesheet" type="text/css" href="style.css">
   <meta charset="utf-8" />
 
 </head>
 
 <body>
-    <button id="play">play</button>
-    <button id="record">play&record</button>
-    <div>DNA sequence</div>
-    <div id="past_dna" style="color:#aaaaaa"></div>
-    <div id="current_dna"></div>
-    <div id="future_dna" style="color:#aaaaaa"></div>
-    <br><br>
-    <div>codon sequence</div>
-    <div id="past_codon" style="color:#aaaaaa"></div>
-    <div id="current_codon"></div>
-    <div id="future_codon" style="color:#aaaaaa"></div>
-    <script src="main.js"></script>
+  <button id="play">play</button>
+  <button id="record">play&record</button>
+  <button id="stop">stop</button>
+  <input type="range" id="mutation" min="0" max="100" value="0" />
+  <label for="mutation"><span id="mutationbox">0</span>% mutation chance (for next tree planted)</label>
+
+  <div>DNA sequence</div>
+  <div id="past_dna" style="color:#aaaaaa"></div>
+  <div id="current_dna"></div>
+  <div id="future_dna" style="color:#aaaaaa"></div>
+  <br><br>
+  <div>codon sequence</div>
+  <div id="past_codon" style="color:#aaaaaa"></div>
+  <div id="current_codon"></div>
+  <div id="future_codon" style="color:#aaaaaa"></div>
+
+  <div>
+    <svg id="grid" xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600"></svg>
+  </div>
+  <script src="main.js"></script>
 </body>
 
 </html>

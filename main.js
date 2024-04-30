@@ -4,12 +4,121 @@ function getRandomInt(max) {
 
 document.getElementById("play").addEventListener("click", async () => {
   await Tone.start();
-  playSynth();
+  newVoice();
 });
 
 document.getElementById("record").addEventListener("click", async () => {
   await Tone.start();
   recordSynth();
+});
+
+document.getElementById("stop").addEventListener("click", async () => {
+  stopSynth();
+  resetSynth();
+});
+
+const mutationBox = document.getElementById("mutationbox");
+
+document.getElementById("mutation").addEventListener("input", async (event) => {
+  mutationBox.textContent = event.target.value;
+});
+
+mutationBox.textContent = document.getElementById("mutation").value;
+
+const GRID_SIDE = 600;
+const svgns = "http://www.w3.org/2000/svg";
+const SVG = document.getElementById("grid");
+
+const drawMatrix = (svg) => {
+  const squareSide = GRID_SIDE / 3;
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      const square = document.createElementNS(svgns, "rect");
+
+      square.setAttribute("x", i * squareSide);
+      square.setAttribute("y", j * squareSide);
+      square.setAttribute("width", squareSide);
+      square.setAttribute("height", squareSide);
+      square.setAttribute("fill-opacity", "0");
+      square.setAttribute("stroke", "#000000");
+
+      svg.appendChild(square);
+
+      const text = document.createElementNS(svgns, "text");
+
+      text.setAttribute("x", i * squareSide + squareSide / 2);
+      text.setAttribute("y", j * squareSide + squareSide / 2);
+      text.setAttribute("width", squareSide / 2);
+      text.setAttribute("height", squareSide / 2);
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("dominant-baseline", "middle");
+      text.style["user-select"] = "none";
+      text.textContent = `${i + 1}-${j + 1}`;
+
+      svg.appendChild(text);
+    }
+  }
+};
+
+drawMatrix(SVG);
+
+const drawTree = (svg, x, y) => {
+  const treeRad = 15;
+  const treeColor = "#00AA00";
+  const treeOutline = "#005500";
+
+  const circle = document.createElementNS(svgns, "circle");
+
+  circle.setAttribute("cx", x);
+  circle.setAttribute("cy", y);
+  circle.setAttribute("r", treeRad);
+  circle.setAttribute("fill", treeColor);
+  circle.setAttribute("stroke", treeOutline);
+  circle.setAttribute("stroke-width", 3);
+  circle.classList.add("tree");
+
+  svg.appendChild(circle);
+
+  return circle;
+};
+
+const killTree = (svg, tree, voice) => {
+  svg.removeChild(tree);
+
+  // turn off the tree's music
+  voice.synth.disconnect();
+  voice.song.cancel();
+};
+
+const showMutation = (tree) => {
+  const treeMutateColor = "#AA0000";
+  const treeMutateOutline = "#550000";
+  const treeColor = "#00AA00";
+  const treeOutline = "#005500";
+
+  tree.setAttribute("fill", treeMutateColor);
+  tree.setAttribute("stroke", treeMutateOutline);
+
+  setTimeout(() => {
+    tree.setAttribute("fill", treeColor);
+    tree.setAttribute("stroke", treeOutline);
+  }, 250);
+};
+
+SVG.addEventListener("click", (evt) => {
+  const x = evt.offsetX;
+  const y = evt.offsetY;
+  const quadX = Math.floor(x / (GRID_SIDE / 3)) + 1;
+  const quadY = Math.floor(y / (GRID_SIDE / 3)) + 1;
+
+  const tree = drawTree(SVG, x, y);
+
+  const voice = newVoice(quadX, quadY, x, y, tree);
+
+  tree.addEventListener("click", (evt) => {
+    killTree(SVG, tree, voice);
+    evt.stopPropagation();
+  });
 });
 
 let mode = [
@@ -33,285 +142,396 @@ let secondary =
 let reliability =
   "9820230075366677607761102212268876300001588876310179999886202302011276620010348981478852577500033022121035799960888864111067850000267777756753267872876022222020217888601661200124316887435401235322688716777424053249";
 
-const firSynth = new Tone.FMSynth().toDestination();
-Tone.Transport.bpm.value = 75;
-firSynth.set({
-  volume: -1,
-  harmonicity: 1.00006,
-  oscillator: { highFrequency: 2000, high: -20, type: "fattriangle15" },
-});
+const buildDnaDict = (dna, codon) => {
+  let dnaToCodon = {};
 
-let seq = [];
-let stopCodonIdx = [];
-let characterIdx = -1;
-//figure out which DNA to skip
-for (let i = 0; i < codon.length; i++) {
-  if (codon[i] == " ") {
-    stopCodonIdx.push(i);
+  for (let i = 0; i < dna.length; i += 3) {
+    const seq = dna.substring(i, i + 3);
+    const cod = codon.charAt(Math.floor(i / 3));
+    dnaToCodon[seq] = cod;
   }
-}
-console.log(stopCodonIdx);
 
-for (let stopCodon = 0; stopCodon < stopCodonIdx.length - 1; stopCodon++) {
-  // if there is stopCodon, put 3 rests
-  seq.push(null);
-  seq.push(null);
-  seq.push(null);
-  let curMode = getRandomInt(7);
-  // console.log(
-  //   (stopCodonIdx[stopCodon] + 1) * 3,
-  //   stopCodonIdx[stopCodon + 1] * 3
-  // );
+  return dnaToCodon;
+};
 
-  let startNote = 0;
-  let scaleNum = 0;
-  let envelopes = {
-    H: { attack: "32n", decay: "64n", sustain: 0.6, release: "32n" },
-    E: { attack: "128t", decay: "32n", sustain: 0, release: "128t" },
-    L: { attack: "2n", decay: "4n", sustain: 0.9, release: "2n" },
+const dnaToCodon = buildDnaDict(dna, codon);
+
+const newDnaSequence = (dna, mutateChance) => {
+  const nucleotides = ['G', 'T', 'A', 'C'];
+  let newDna = "";
+  let dnaMutated = [];
+
+  for (let i = 0; i < dna.length; i++) {
+    const sourceNucleotide = dna[i];
+    let newNucleotide = sourceNucleotide;
+    let mutate = false;
+
+    if (Math.random() < mutateChance) {
+      newNucleotide = nucleotides[getRandomInt(4)];
+      mutate = true;
+    }
+
+    newDna += newNucleotide;
+    dnaMutated.push(mutate);
+  }
+
+  let newCodons = [];
+  let codonsMutated = [];
+
+  for (let i = 0; i < newDna.length; i += 3) {
+    let dnaSeq = dna.substring(i, i + 3);
+    let seqMutated = dnaMutated.slice(i, i + 3);
+
+    let codon = dnaToCodon[dnaSeq];
+    newCodons += codon;
+
+    const codonMutated = seqMutated.includes(true);
+    codonsMutated.push(codonMutated);
+  }
+
+  return {
+    dna: newDna,
+    codon: newCodons,
+    dnaMutated,
+    codonsMutated,
+    flexibility: flexibility,
+    secondary: secondary,
+    reliability: reliability,
   };
+};
 
-  switch (codon[stopCodon] + 1) {
-    case "M":
-      // start with c 60
-      startNote = 60;
-      break;
-    case "V":
-      //start with eb 63
-      startNote = 63;
-      break;
-    case "L":
-      //start with F# 66
-      startNote = 66;
-      break;
-    default:
-      // start with a 69
-      startNote = 69;
-      break;
+Tone.Transport.bpm.value = 75;
+
+const buildEventSequences = (dnaSeq) => {
+  let { dna, codon, dnaMutated, reliability, secondary, flexibility } = dnaSeq;
+
+  let seq = [];
+  let stopCodonIdx = [0];
+  let characterIdx = -1;
+  //figure out which DNA to skip
+  for (let i = 0; i < codon.length; i++) {
+    if (codon[i] == " ") {
+      stopCodonIdx.push(i);
+    }
   }
-  // go by DNA
-  for (
-    let j = (stopCodonIdx[stopCodon] + 1) * 3;
-    j < stopCodonIdx[stopCodon + 1] * 3;
-    j++
-  ) {
-    // starting of the codon
-    if (j % 3 == 0) {
-      characterIdx++;
-    }
+  stopCodonIdx.push(codon.length - 1);
+  console.log(stopCodonIdx);
 
-    switch (dna[j]) {
-      case "A":
-        scaleNum -= 1;
+  for (let stopCodon = 0; stopCodon < stopCodonIdx.length - 1; stopCodon++) {
+    // if there is stopCodon, put 3 rests
+    seq.push(null);
+    seq.push(null);
+    seq.push(null);
+    let curMode = getRandomInt(7);
+    // console.log(
+    //   (stopCodonIdx[stopCodon] + 1) * 3,
+    //   stopCodonIdx[stopCodon + 1] * 3
+    // );
+
+    let startNote = 0;
+    let scaleNum = 0;
+    let envelopes = {
+      H: { attack: "32n", decay: "64n", sustain: 0.6, release: "32n" },
+      E: { attack: "128t", decay: "32n", sustain: 0, release: "128t" },
+      L: { attack: "2n", decay: "4n", sustain: 0.9, release: "2n" },
+    };
+
+    switch (codon[stopCodon] + 1) {
+      case "M":
+        // start with c 60
+        startNote = 60;
         break;
-      case "T":
-        scaleNum += 3;
+      case "V":
+        //start with eb 63
+        startNote = 63;
         break;
-      case "G":
-        scaleNum -= 2;
+      case "L":
+        //start with F# 66
+        startNote = 66;
         break;
-      case "C":
+      default:
+        // start with a 69
+        startNote = 69;
         break;
     }
-    // console.log(scaleNum, curMode, mode[curMode].length);
-    let note =
-      scaleNum % mode[curMode].length >= 0
-        ? startNote +
-          12 * Math.floor(scaleNum / mode[curMode].length) +
-          (scaleNum % mode[curMode].length)
-        : startNote +
-          12 * Math.floor(scaleNum / mode[curMode].length) +
-          mode[curMode].length +
-          (scaleNum % mode[curMode].length);
+    // go by DNA
+    for (
+      let j = (stopCodonIdx[stopCodon] + 1) * 3;
+      j < stopCodonIdx[stopCodon + 1] * 3;
+      j++
+    ) {
+      // starting of the codon
+      if (j % 3 == 0) {
+        characterIdx++;
+      }
 
-    switch (dna[j]) {
-      case "A":
-        if (j % 3 == 0) {
+      switch (dna[j]) {
+        case "A":
+          scaleNum -= 1;
+          break;
+        case "T":
+          scaleNum += 3;
+          break;
+        case "G":
+          scaleNum -= 2;
+          break;
+        case "C":
+          break;
+      }
+      // console.log(scaleNum, curMode, mode[curMode].length);
+      let note = (scaleNum % mode[curMode].length >= 0)
+        ? (startNote + 12 * Math.floor(scaleNum / mode[curMode].length)
+          + (scaleNum % mode[curMode].length))
+        : (startNote + 12 * Math.floor(scaleNum / mode[curMode].length)
+          + mode[curMode].length + (scaleNum % mode[curMode].length));
+
+      switch (dna[j]) {
+        case "A":
+          if (j % 3 == 0) {
+            seq.push([
+              {
+                note: Tone.Midi(note),
+                vel: (1 + reliability[characterIdx]) / 11,
+                env: envelopes[secondary[characterIdx]],
+                modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
+              },
+              {
+                note: Tone.Midi(note),
+                vel: (1 + reliability[characterIdx]) / 11,
+                env: envelopes[secondary[characterIdx]],
+                modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
+              },
+              null,
+            ]);
+          } else if (j % 3 == 1) {
+            seq.push([
+              {
+                note: Tone.Midi(note),
+                vel: (1 + reliability[characterIdx]) / 11,
+                env: envelopes[secondary[characterIdx]],
+                modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
+              },
+              null,
+              {
+                note: Tone.Midi(note),
+                vel: (1 + reliability[characterIdx]) / 11,
+                env: envelopes[secondary[characterIdx]],
+                modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
+              },
+            ]);
+          } else {
+            seq.push([
+              null,
+              {
+                note: Tone.Midi(note),
+                vel: (1 + reliability[characterIdx]) / 11,
+                env: envelopes[secondary[characterIdx]],
+                modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
+              },
+              {
+                note: Tone.Midi(note),
+                vel: (1 + reliability[characterIdx]) / 11,
+                env: envelopes[secondary[characterIdx]],
+                modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
+              },
+            ]);
+          }
+          break;
+        case "T":
           seq.push([
             {
               note: Tone.Midi(note),
               vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
+              mutated: dnaMutated[j],
             },
             {
               note: Tone.Midi(note),
               vel: (1 + reliability[characterIdx]) / 11,
               env: envelopes[secondary[characterIdx]],
               modulation: (10 - flexibility[characterIdx]) / 5,
-            },
-            null,
-          ]);
-        } else if (j % 3 == 1) {
-          seq.push([
-            {
-              note: Tone.Midi(note),
-              vel: (1 + reliability[characterIdx]) / 11,
-              env: envelopes[secondary[characterIdx]],
-              modulation: (10 - flexibility[characterIdx]) / 5,
-            },
-            null,
-            {
-              note: Tone.Midi(note),
-              vel: (1 + reliability[characterIdx]) / 11,
-              env: envelopes[secondary[characterIdx]],
-              modulation: (10 - flexibility[characterIdx]) / 5,
+              mutated: dnaMutated[j],
             },
           ]);
-        } else {
-          seq.push([
-            null,
-            {
-              note: Tone.Midi(note),
-              vel: (1 + reliability[characterIdx]) / 11,
-              env: envelopes[secondary[characterIdx]],
-              modulation: (10 - flexibility[characterIdx]) / 5,
-            },
-            {
-              note: Tone.Midi(note),
-              vel: (1 + reliability[characterIdx]) / 11,
-              env: envelopes[secondary[characterIdx]],
-              modulation: (10 - flexibility[characterIdx]) / 5,
-            },
-          ]);
-        }
-        break;
-      case "T":
-        seq.push([
-          {
+          break;
+        case "G":
+          if (j % 3 == 0) {
+            seq.push([
+              {
+                note: Tone.Midi(note),
+                vel: (1 + reliability[characterIdx]) / 11,
+                env: envelopes[secondary[characterIdx]],
+                modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
+              },
+              {
+                note: Tone.Midi(note),
+                vel: (1 + reliability[characterIdx]) / 11,
+                env: envelopes[secondary[characterIdx]],
+                modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
+              },
+              null,
+              {
+                note: Tone.Midi(note),
+                vel: (1 + reliability[characterIdx]) / 11,
+                env: envelopes[secondary[characterIdx]],
+                modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
+              },
+            ]);
+          } else if (j % 3 == 1) {
+            seq.push(
+              {
+                note: Tone.Midi(note),
+                vel: (1 + reliability[characterIdx]) / 11,
+                env: envelopes[secondary[characterIdx]],
+                modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
+              },
+              null,
+              null,
+              {
+                note: Tone.Midi(note),
+                vel: (1 + reliability[characterIdx]) / 11,
+                env: envelopes[secondary[characterIdx]],
+                modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
+              }
+            );
+          } else {
+            seq.push([
+              {
+                note: Tone.Midi(note),
+                vel: (1 + reliability[characterIdx]) / 11,
+                env: envelopes[secondary[characterIdx]],
+                modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
+              },
+              null,
+              {
+                note: Tone.Midi(note),
+                vel: (1 + reliability[characterIdx]) / 11,
+                env: envelopes[secondary[characterIdx]],
+                modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
+              },
+              {
+                note: Tone.Midi(note),
+                vel: (1 + reliability[characterIdx]) / 11,
+                env: envelopes[secondary[characterIdx]],
+                modulation: (10 - flexibility[characterIdx]) / 5,
+                mutated: dnaMutated[j],
+              },
+            ]);
+          }
+          break;
+        case "C":
+          seq.push({
             note: Tone.Midi(note),
             vel: (1 + reliability[characterIdx]) / 11,
             env: envelopes[secondary[characterIdx]],
             modulation: (10 - flexibility[characterIdx]) / 5,
-          },
-          {
-            note: Tone.Midi(note),
-            vel: (1 + reliability[characterIdx]) / 11,
-            env: envelopes[secondary[characterIdx]],
-            modulation: (10 - flexibility[characterIdx]) / 5,
-          },
-        ]);
-        break;
-      case "G":
-        if (j % 3 == 0) {
-          seq.push([
-            {
-              note: Tone.Midi(note),
-              vel: (1 + reliability[characterIdx]) / 11,
-              env: envelopes[secondary[characterIdx]],
-              modulation: (10 - flexibility[characterIdx]) / 5,
-            },
-            {
-              note: Tone.Midi(note),
-              vel: (1 + reliability[characterIdx]) / 11,
-              env: envelopes[secondary[characterIdx]],
-              modulation: (10 - flexibility[characterIdx]) / 5,
-            },
-            null,
-            {
-              note: Tone.Midi(note),
-              vel: (1 + reliability[characterIdx]) / 11,
-              env: envelopes[secondary[characterIdx]],
-              modulation: (10 - flexibility[characterIdx]) / 5,
-            },
-          ]);
-        } else if (j % 3 == 1) {
-          seq.push(
-            {
-              note: Tone.Midi(note),
-              vel: (1 + reliability[characterIdx]) / 11,
-              env: envelopes[secondary[characterIdx]],
-              modulation: (10 - flexibility[characterIdx]) / 5,
-            },
-            null,
-            null,
-            {
-              note: Tone.Midi(note),
-              vel: (1 + reliability[characterIdx]) / 11,
-              env: envelopes[secondary[characterIdx]],
-              modulation: (10 - flexibility[characterIdx]) / 5,
-            }
-          );
-        } else {
-          seq.push([
-            {
-              note: Tone.Midi(note),
-              vel: (1 + reliability[characterIdx]) / 11,
-              env: envelopes[secondary[characterIdx]],
-              modulation: (10 - flexibility[characterIdx]) / 5,
-            },
-            null,
-            {
-              note: Tone.Midi(note),
-              vel: (1 + reliability[characterIdx]) / 11,
-              env: envelopes[secondary[characterIdx]],
-              modulation: (10 - flexibility[characterIdx]) / 5,
-            },
-            {
-              note: Tone.Midi(note),
-              vel: (1 + reliability[characterIdx]) / 11,
-              env: envelopes[secondary[characterIdx]],
-              modulation: (10 - flexibility[characterIdx]) / 5,
-            },
-          ]);
-        }
-        break;
-      case "C":
-        seq.push({
-          note: Tone.Midi(note),
-          vel: (1 + reliability[characterIdx]) / 11,
-          env: envelopes[secondary[characterIdx]],
-          modulation: (10 - flexibility[characterIdx]) / 5,
-        });
-        break;
+            mutated: dnaMutated[j],
+          });
+          break;
+      }
     }
   }
-}
-console.log(seq);
+  console.log(seq);
 
-// play
-let song = new Tone.Sequence((time, value) => {
-  if (value.env) {
-    firSynth.set({
-      envelope: value.env,
-      modulationIndex: value.modulation,
-      harmonicity: value.modulation,
-    });
-  }
-  firSynth.triggerAttackRelease(value.note, 1, time, value.vel);
-}, seq).start(0);
+  return {
+    seq, stopCodonIdx, characterIdx
+  };
+};
 
-let repeatTime = 0;
-let codonTime = 0;
+const buildToneSequence = (seq, synth, tree) => {
+  return new Tone.Sequence((time, value) => {
+    if (value.env) {
+      synth.set({
+        envelope: value.env,
+        modulationIndex: value.modulation,
+        harmonicity: value.modulation,
+      });
+    }
+    synth.triggerAttackRelease(value.note, 1, time, value.vel);
 
-Tone.Transport.scheduleRepeat((time) => {
-  document.getElementById("past_dna").innerHTML = dna.slice(0, repeatTime);
-  document.getElementById("current_dna").innerHTML = dna[repeatTime];
-  document.getElementById("future_dna").innerHTML = dna.slice(
-    repeatTime + 1,
-    dna.length
-  );
+    if (value.mutated === true) {
+      showMutation(tree);
+    }
+  }, seq);
+};
 
-  if (repeatTime % 3 === 0) {
-    document.getElementById("past_codon").innerHTML = codon.slice(0, codonTime);
-    document.getElementById("current_codon").innerHTML = codon[codonTime];
-    document.getElementById("future_codon").innerHTML = codon.slice(
-      codonTime + 1,
-      codon.length
+const scheduleDnaDisplay = (dna, codon) => {
+  let repeatTime = 0;
+  let codonTime = 0;
+
+  return Tone.Transport.scheduleRepeat((time) => {
+    document.getElementById("past_dna").innerHTML = dna.slice(0, repeatTime);
+    document.getElementById("current_dna").innerHTML = dna[repeatTime];
+    document.getElementById("future_dna").innerHTML = dna.slice(
+      repeatTime + 1,
+      dna.length
     );
-    codonTime++;
-  }
-  repeatTime++;
-}, "8n");
 
-function playSynth() {
-  Tone.Transport.start();
+    if (repeatTime % 3 === 0) {
+      document.getElementById("past_codon").innerHTML = codon.slice(0, codonTime);
+      document.getElementById("current_codon").innerHTML = codon[codonTime];
+      document.getElementById("future_codon").innerHTML = codon.slice(
+        codonTime + 1,
+        codon.length
+      );
+      codonTime++;
+    }
+    repeatTime++;
+  }, "8n");
+};
+
+function prepareNewVoice(quadX, quadY, xCoord, yCoord, tree) {
+  const panAmt = xCoord / GRID_SIDE * 2 - 1;
+  const panner = new Tone.Panner(panAmt).toDestination();
+
+  // TODO: vary some synth parameters based on xCoord and yCoord?
+  const firSynth = new Tone.FMSynth().connect(panner);
+  firSynth.set({
+    volume: -1,
+    harmonicity: 1.00006,
+    oscillator: { highFrequency: 2000, high: -20, type: "fattriangle15" },
+  });
+
+  // segment dna based on quadrat
+  const quadIdx = quadX + quadY * 3 - 4;
+  const numCodons = codon.length;
+  const codonBounds = [quadIdx * numCodons / 9, (quadIdx + 1) * numCodons / 9];
+
+  const dnaSegment = dna.substring(codonBounds[0] * 3, codonBounds[1] * 3);
+
+  const dnaSeq = newDnaSequence(dnaSegment, Number(mutationBox.textContent) / 100);
+  const eventSeq = buildEventSequences(dnaSeq);
+  const song = buildToneSequence(eventSeq.seq, firSynth, tree);
+  song.start(0);
+
+  const voice = { synth: firSynth, song };
+  return voice;
 }
 
-const recorder = new Tone.Recorder();
+function newVoice(quadX, quadY, xCoord, yCoord, tree) {
+  const voice = prepareNewVoice(quadX, quadY, xCoord, yCoord, tree);
+  Tone.Transport.start();
+  return voice;
+}
 
 let recordSynth = () => {
+  const recorder = new Tone.Recorder();
   firSynth.chain(recorder);
+  prepareNewVoice();
   Tone.Transport.start();
   recorder.start();
   setTimeout(async () => {
@@ -325,3 +545,14 @@ let recordSynth = () => {
     anchor.click();
   }, 180000);
 };
+
+const stopOneVoice = (voice) => {
+  voice.synth.disconnect();
+  voice.song.cancel();
+}
+
+const stopSynth = () => {
+  Tone.Transport.stop();
+}
+
+const resetSynth = () => { };
