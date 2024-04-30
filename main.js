@@ -25,6 +25,73 @@ document.getElementById("mutation").addEventListener("input", async (event) => {
 
 mutationBox.textContent = document.getElementById("mutation").value;
 
+const GRID_SIDE = 600;
+const svgns = "http://www.w3.org/2000/svg";
+const SVG = document.getElementById("grid");
+
+const drawMatrix = (svg) => {
+  const squareSide = GRID_SIDE / 3;
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      const square = document.createElementNS(svgns, "rect");
+
+      square.setAttribute("x", i * squareSide);
+      square.setAttribute("y", j * squareSide);
+      square.setAttribute("width", squareSide);
+      square.setAttribute("height", squareSide);
+      square.setAttribute("fill-opacity", "0");
+      square.setAttribute("stroke", "#000000");
+
+      SVG.appendChild(square);
+
+      const text = document.createElementNS(svgns, "text");
+
+      text.setAttribute("x", i * squareSide + squareSide / 2);
+      text.setAttribute("y", j * squareSide + squareSide / 2);
+      text.setAttribute("width", squareSide / 2);
+      text.setAttribute("height", squareSide / 2);
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("dominant-baseline", "middle");
+      text.style["user-select"] = "none";
+      text.textContent = `${i + 1}-${j + 1}`;
+
+      SVG.appendChild(text);
+    }
+  }
+};
+
+drawMatrix();
+
+const drawTree = (svg, x, y) => {
+  const treeRad = 15;
+  const treeColor = "#00AA00";
+  const treeOutline = "#005500";
+
+  const circle = document.createElementNS(svgns, "circle");
+
+  circle.setAttribute("cx", x);
+  circle.setAttribute("cy", y);
+  circle.setAttribute("r", treeRad);
+  circle.setAttribute("fill", treeColor);
+  circle.setAttribute("stroke", treeOutline);
+  circle.setAttribute("stroke-width", 3);
+  circle.classList.add("tree");
+
+  circle.addEventListener("click", (evt) => {
+    // self-destruct button!
+    SVG.removeChild(circle);
+    evt.stopPropagation();
+  });
+
+  SVG.appendChild(circle);
+}
+
+SVG.addEventListener("click", (evt) => {
+  drawTree(SVG, evt.offsetX, evt.offsetY);
+
+  // TODO: start playing music!
+});
+
 let RUNNING = [];
 let CURRENT_SEQUENCE = null;
 let DISPLAY_REPEAT_ID = null;
