@@ -73,7 +73,7 @@ const newDnaSequence = (mutateChance) => {
     let newNucleotide = sourceNucleotide;
 
     if (Math.random() < mutateChance) {
-      newNucleotide = nucleotides[Math.floor(Math.random() * 4)];
+      newNucleotide = nucleotides[getRandomInt(4)];
     }
 
     newDna += newNucleotide;
@@ -368,7 +368,9 @@ const scheduleDnaDisplay = (dna, codon) => {
 };
 
 function prepareSynthForPlay() {
-  const firSynth = new Tone.FMSynth().toDestination();
+  const panAmt = Math.random() * 2 - 1;
+  const panner = new Tone.Panner(panAmt).toDestination();
+  const firSynth = new Tone.FMSynth().connect(panner);
   firSynth.set({
     volume: -1,
     harmonicity: 1.00006,
