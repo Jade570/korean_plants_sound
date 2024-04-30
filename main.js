@@ -25,6 +25,7 @@ document.getElementById("mutation").addEventListener("input", async (event) => {
 
 mutationBox.textContent = document.getElementById("mutation").value;
 
+let RUNNING = [];
 let CURRENT_SEQUENCE = null;
 let DISPLAY_REPEAT_ID = null;
 
@@ -94,13 +95,7 @@ const newDnaSequence = (mutateChance) => {
   };
 };
 
-const firSynth = new Tone.FMSynth().toDestination();
 Tone.Transport.bpm.value = 75;
-firSynth.set({
-  volume: -1,
-  harmonicity: 1.00006,
-  oscillator: { highFrequency: 2000, high: -20, type: "fattriangle15" },
-});
 
 const buildEventSequences = (dnaSeq) => {
   let { dna, codon, reliability, secondary, flexibility } = dnaSeq;
@@ -334,16 +329,16 @@ const buildEventSequences = (dnaSeq) => {
   };
 };
 
-const buildToneSequence = (seq) => {
+const buildToneSequence = (seq, synth) => {
   return new Tone.Sequence((time, value) => {
     if (value.env) {
-      firSynth.set({
+      synth.set({
         envelope: value.env,
         modulationIndex: value.modulation,
         harmonicity: value.modulation,
       });
     }
-    firSynth.triggerAttackRelease(value.note, 1, time, value.vel);
+    synth.triggerAttackRelease(value.note, 1, time, value.vel);
   }, seq);
 };
 
@@ -373,15 +368,25 @@ const scheduleDnaDisplay = (dna, codon) => {
 };
 
 function prepareSynthForPlay() {
+  const firSynth = new Tone.FMSynth().toDestination();
+  firSynth.set({
+    volume: -1,
+    harmonicity: 1.00006,
+    oscillator: { highFrequency: 2000, high: -20, type: "fattriangle15" },
+  });
+
   const dnaSeq = newDnaSequence(Number(mutationBox.textContent) / 100);
   const eventSeq = buildEventSequences(dnaSeq);
-  const song = buildToneSequence(eventSeq.seq);
+  const song = buildToneSequence(eventSeq.seq, firSynth);
   song.start(0);
 
-  const display = scheduleDnaDisplay(dnaSeq.dna, dnaSeq.codon);
+  let display = undefined;
 
-  CURRENT_SEQUENCE = song;
-  DISPLAY_REPEAT_ID = display;
+  if (RUNNING.length == 0) {
+    display = scheduleDnaDisplay(dnaSeq.dna, dnaSeq.codon);
+  }
+
+  RUNNING.push({ synth: firSynth, song, displayId: display });
 }
 
 function playSynth() {
@@ -411,11 +416,16 @@ let recordSynth = () => {
 const stopSynth = () => {
   Tone.Transport.stop();
 
-  CURRENT_SEQUENCE.cancel();
-  CURRENT_SEQUENCE = null;
+  for (const running of RUNNING) {
+    running.synth.disconnect();
+    running.song.cancel();
 
-  Tone.Transport.clear(DISPLAY_REPEAT_ID);
-  DISPLAY_REPEAT_ID = null;
+    if (running.displayId) {
+      Tone.Transport.clear(running.displayId);
+    }
+  }
+
+  RUNNING = [];
 }
 
 const resetSynth = () => { };
