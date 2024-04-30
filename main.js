@@ -42,7 +42,7 @@ const drawMatrix = (svg) => {
       square.setAttribute("fill-opacity", "0");
       square.setAttribute("stroke", "#000000");
 
-      SVG.appendChild(square);
+      svg.appendChild(square);
 
       const text = document.createElementNS(svgns, "text");
 
@@ -55,14 +55,14 @@ const drawMatrix = (svg) => {
       text.style["user-select"] = "none";
       text.textContent = `${i + 1}-${j + 1}`;
 
-      SVG.appendChild(text);
+      svg.appendChild(text);
     }
   }
 };
 
-drawMatrix();
+drawMatrix(SVG);
 
-const drawTree = (svg, x, y) => {
+const drawTree = (svg, x, y, voice) => {
   const treeRad = 15;
   const treeColor = "#00AA00";
   const treeOutline = "#005500";
@@ -79,22 +79,26 @@ const drawTree = (svg, x, y) => {
 
   circle.addEventListener("click", (evt) => {
     // self-destruct button!
-    SVG.removeChild(circle);
+    svg.removeChild(circle);
+
+    // turn off the tree's music
+    voice.synth.disconnect();
+    voice.song.cancel();
+
     evt.stopPropagation();
   });
 
-  SVG.appendChild(circle);
+  svg.appendChild(circle);
 }
 
 SVG.addEventListener("click", (evt) => {
-  drawTree(SVG, evt.offsetX, evt.offsetY);
-
-  // TODO: start playing music!
+  const voice = playSynth();
+  drawTree(SVG, evt.offsetX, evt.offsetY, voice);
 });
 
-let RUNNING = [];
-let CURRENT_SEQUENCE = null;
-let DISPLAY_REPEAT_ID = null;
+// let RUNNING = [];
+// let CURRENT_SEQUENCE = null;
+// let DISPLAY_REPEAT_ID = null;
 
 let mode = [
   [0, 2, 4, 6, 8, 10],
@@ -449,18 +453,22 @@ function prepareSynthForPlay() {
   const song = buildToneSequence(eventSeq.seq, firSynth);
   song.start(0);
 
-  let display = undefined;
+  const voice = { synth: firSynth, song };
+  return voice;
 
-  if (RUNNING.length == 0) {
-    display = scheduleDnaDisplay(dnaSeq.dna, dnaSeq.codon);
-  }
+  // let display = undefined;
 
-  RUNNING.push({ synth: firSynth, song, displayId: display });
+  // if (RUNNING.length == 0) {
+  //   display = scheduleDnaDisplay(dnaSeq.dna, dnaSeq.codon);
+  // }
+
+  // RUNNING.push({ synth: firSynth, song, displayId: display });
 }
 
 function playSynth() {
-  prepareSynthForPlay();
+  const voice = prepareSynthForPlay();
   Tone.Transport.start();
+  return voice;
 }
 
 const recorder = new Tone.Recorder();
@@ -482,19 +490,24 @@ let recordSynth = () => {
   }, 180000);
 };
 
+const stopOneVoice = (voice) => {
+  voice.synth.disconnect();
+  voice.song.cancel();
+}
+
 const stopSynth = () => {
   Tone.Transport.stop();
 
-  for (const running of RUNNING) {
-    running.synth.disconnect();
-    running.song.cancel();
+  // for (const running of RUNNING) {
+  //   running.synth.disconnect();
+  //   running.song.cancel();
 
-    if (running.displayId) {
-      Tone.Transport.clear(running.displayId);
-    }
-  }
+  //   if (running.displayId) {
+  //     Tone.Transport.clear(running.displayId);
+  //   }
+  // }
 
-  RUNNING = [];
+  // RUNNING = [];
 }
 
 const resetSynth = () => { };
