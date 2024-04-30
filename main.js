@@ -456,9 +456,11 @@ const buildToneSequence = (seq, synth, tree) => {
   return new Tone.Sequence((time, value) => {
     if (value.env) {
       synth.set({
+        volume:value.mutated==true ? -5:-1,
         envelope: value.env,
         modulationIndex: value.modulation,
         harmonicity: value.modulation,
+        oscillator:{type: value.mutated==true ? "fatsquare":"triangle15" }
       });
     }
     synth.triggerAttackRelease(value.note, 1, time, value.vel);
@@ -469,30 +471,30 @@ const buildToneSequence = (seq, synth, tree) => {
   }, seq);
 };
 
-const scheduleDnaDisplay = (dna, codon) => {
-  let repeatTime = 0;
-  let codonTime = 0;
+// const scheduleDnaDisplay = (dna, codon) => {
+//   let repeatTime = 0;
+//   let codonTime = 0;
 
-  return Tone.Transport.scheduleRepeat((time) => {
-    document.getElementById("past_dna").innerHTML = dna.slice(0, repeatTime);
-    document.getElementById("current_dna").innerHTML = dna[repeatTime];
-    document.getElementById("future_dna").innerHTML = dna.slice(
-      repeatTime + 1,
-      dna.length
-    );
+//   return Tone.Transport.scheduleRepeat((time) => {
+//     document.getElementById("past_dna").innerHTML = dna.slice(0, repeatTime);
+//     document.getElementById("current_dna").innerHTML = dna[repeatTime];
+//     document.getElementById("future_dna").innerHTML = dna.slice(
+//       repeatTime + 1,
+//       dna.length
+//     );
 
-    if (repeatTime % 3 === 0) {
-      document.getElementById("past_codon").innerHTML = codon.slice(0, codonTime);
-      document.getElementById("current_codon").innerHTML = codon[codonTime];
-      document.getElementById("future_codon").innerHTML = codon.slice(
-        codonTime + 1,
-        codon.length
-      );
-      codonTime++;
-    }
-    repeatTime++;
-  }, "8n");
-};
+//     if (repeatTime % 3 === 0) {
+//       document.getElementById("past_codon").innerHTML = codon.slice(0, codonTime);
+//       document.getElementById("current_codon").innerHTML = codon[codonTime];
+//       document.getElementById("future_codon").innerHTML = codon.slice(
+//         codonTime + 1,
+//         codon.length
+//       );
+//       codonTime++;
+//     }
+//     repeatTime++;
+//   }, "8n");
+// };
 
 function prepareNewVoice(quadX, quadY, xCoord, yCoord, tree) {
   const panAmt = xCoord / GRID_SIDE * 2 - 1;
