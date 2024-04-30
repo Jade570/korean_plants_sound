@@ -2,21 +2,6 @@ function getRandomInt(max) {
   return Math.floor(Math.random() * max);
 }
 
-document.getElementById("play").addEventListener("click", async () => {
-  await Tone.start();
-  newVoice();
-});
-
-document.getElementById("record").addEventListener("click", async () => {
-  await Tone.start();
-  recordSynth();
-});
-
-document.getElementById("stop").addEventListener("click", async () => {
-  stopSynth();
-  resetSynth();
-});
-
 const mutationBox = document.getElementById("mutationbox");
 
 document.getElementById("mutation").addEventListener("input", async (event) => {
@@ -62,9 +47,64 @@ const drawMatrix = (svg) => {
 
 drawMatrix(SVG);
 
+const TREE_COLOR = [0x00, 0xAA, 0x00];
+
+const clampColor = (rgb) => {
+  const [r, g, b] = rgb;
+
+  const clampChannel = (val) => {
+    if (val < 0) {
+      return 0;
+    }
+
+    if (val > 255) {
+      return 255;
+    }
+
+    return Math.floor(val);
+  }
+
+  return [clampChannel(r), clampChannel(g), clampChannel(b)];
+};
+
+const randomizeColor = (sigma, rgb) => {
+  const [r, g, b] = rgb;
+
+  const newR = r + gaussianRandom(0, sigma);
+  const newG = g + gaussianRandom(0, sigma);
+  const newB = b + gaussianRandom(0, sigma);
+
+  return clampColor([newR, newG, newB]);
+};
+
+// Standard Normal variate using Box-Muller transform.
+// From https://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
+const gaussianRandom = (mean = 0, stdev = 1) => {
+  const u = 1 - Math.random(); // Converting [0,1) to (0,1]
+  const v = Math.random();
+  const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+  // Transform to the desired mean and standard deviation:
+  return z * stdev + mean;
+}
+
+const rgbToHex = (rgb) => {
+  const chanToHex = (val) => {
+    const h = val.toString(16);
+    if (h.length == 1) {
+      return "0" + h;
+    } else {
+      return h;
+    }
+  };
+
+  const [r, g, b] = rgb;
+  return `#${chanToHex(r)}${chanToHex(g)}${chanToHex(b)}`;
+};
+
 const drawTree = (svg, x, y) => {
   const treeRad = 15;
-  const treeColor = "#00AA00";
+
+  const treeColor = randomizeColor(Number(mutationBox.textContent) / 2, TREE_COLOR);
   const treeOutline = "#005500";
 
   const circle = document.createElementNS(svgns, "circle");
@@ -72,7 +112,7 @@ const drawTree = (svg, x, y) => {
   circle.setAttribute("cx", x);
   circle.setAttribute("cy", y);
   circle.setAttribute("r", treeRad);
-  circle.setAttribute("fill", treeColor);
+  circle.setAttribute("fill", rgbToHex(treeColor));
   circle.setAttribute("stroke", treeOutline);
   circle.setAttribute("stroke-width", 3);
   circle.classList.add("tree");
@@ -93,8 +133,9 @@ const killTree = (svg, tree, voice) => {
 const showMutation = (tree) => {
   const treeMutateColor = "#AA0000";
   const treeMutateOutline = "#550000";
-  const treeColor = "#00AA00";
   const treeOutline = "#005500";
+
+  const treeColor = tree.getAttribute("fill");
 
   tree.setAttribute("fill", treeMutateColor);
   tree.setAttribute("stroke", treeMutateOutline);
@@ -456,11 +497,11 @@ const buildToneSequence = (seq, synth, tree) => {
   return new Tone.Sequence((time, value) => {
     if (value.env) {
       synth.set({
-        volume:value.mutated==true ? -5:-1,
+        volume: value.mutated == true ? -5 : -1,
         envelope: value.env,
         modulationIndex: value.modulation,
         harmonicity: value.modulation,
-        oscillator:{type: value.mutated==true ? "fatsquare":"triangle15" }
+        oscillator: { type: value.mutated == true ? "fatsquare" : "triangle15" }
       });
     }
     synth.triggerAttackRelease(value.note, 1, time, value.vel);
@@ -470,31 +511,6 @@ const buildToneSequence = (seq, synth, tree) => {
     }
   }, seq);
 };
-
-// const scheduleDnaDisplay = (dna, codon) => {
-//   let repeatTime = 0;
-//   let codonTime = 0;
-
-//   return Tone.Transport.scheduleRepeat((time) => {
-//     document.getElementById("past_dna").innerHTML = dna.slice(0, repeatTime);
-//     document.getElementById("current_dna").innerHTML = dna[repeatTime];
-//     document.getElementById("future_dna").innerHTML = dna.slice(
-//       repeatTime + 1,
-//       dna.length
-//     );
-
-//     if (repeatTime % 3 === 0) {
-//       document.getElementById("past_codon").innerHTML = codon.slice(0, codonTime);
-//       document.getElementById("current_codon").innerHTML = codon[codonTime];
-//       document.getElementById("future_codon").innerHTML = codon.slice(
-//         codonTime + 1,
-//         codon.length
-//       );
-//       codonTime++;
-//     }
-//     repeatTime++;
-//   }, "8n");
-// };
 
 function prepareNewVoice(quadX, quadY, xCoord, yCoord, tree) {
   const panAmt = xCoord / GRID_SIDE * 2 - 1;
@@ -552,9 +568,3 @@ const stopOneVoice = (voice) => {
   voice.synth.disconnect();
   voice.song.cancel();
 }
-
-const stopSynth = () => {
-  Tone.Transport.stop();
-}
-
-const resetSynth = () => { };
